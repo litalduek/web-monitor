@@ -1,0 +1,13 @@
+websites:
+  - url: "http://stackoverflow.com"
+    interval: 5
+    regex_pattern: "Every developer has a tab open to Stack Overflow"
+  - url: "http://google.com"
+    interval: 10
+    regex_pattern: "Google"
+  - url: "http://github.com"
+    interval: 20
+    regex_pattern: "Let’s build from here"
+  - url: "https://www.flickr.com/photos/404error1"
+    interval: 5
+    regex_pattern: "This is not the"
