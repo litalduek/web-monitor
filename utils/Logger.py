@@ -1,6 +1,7 @@
 import logging
 import logging.config
 
+
 class Logger:
     _instance = None
 
@@ -11,7 +12,6 @@ class Logger:
         return cls._instance
 
     def _initialize(self):
-        # Configure logging
         logging.basicConfig(
             level=logging.INFO,
             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -23,3 +23,5 @@ class Logger:
 
     def get_logger(self):
         return self.logger
+
+    # attribution: https://gist.github.com/Rustam-Z/aeb88b01b0f0d84e9f23240eeea2727f

@@ -66,7 +66,7 @@ class WebsiteMonitor:
             status_code = response.status_code
             regex_matched = None
 
-            if 200 <= status_code < 226:
+            if status_code/100 == 2:
                 content = response.text
                 regex_matched = bool(re.search(website.regex_pattern, content))
 
