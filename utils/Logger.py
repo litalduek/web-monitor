@@ -1,17 +1,18 @@
 import logging
 import logging.config
 
+class SingletonType(type):
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(SingletonType, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
 
 class Logger:
     _instance = None
 
-    def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super(Logger, cls).__new__(cls, *args, **kwargs)
-            cls._instance._initialize()
-        return cls._instance
-
-    def _initialize(self):
+    def __init__(self):
         logging.basicConfig(
             level=logging.INFO,
             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
