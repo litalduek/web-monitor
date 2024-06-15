@@ -16,39 +16,25 @@ from models.Website import Website
 
 class WebsiteMonitor:
     def __init__(self):
-        self.scheduled_website_task_list = None
-        self.websites_list = None
         self.monitorDao = MonitorDao()
         self.website_metrics_list = []
         self.logger = logging.getLogger(self.__class__.__name__)
         self.stop_event = threading.Event()
 
-        self.load_websites_data(Config.WEBSITES_DATA_YAML)
-        self._setup_tasks()
-
-    def load_websites_data(self, websites_data_yaml):
-        try:
-            self.websites_list = self._load_websites_from_yaml(websites_data_yaml)
-        except FileNotFoundError:
-            self.logger.error(f"YAML file not found: {websites_data_yaml}")
-        except yaml.YAMLError as e:
-            self.logger.error(f"Error parsing YAML file: {e}")
-        except Exception as e:
-            self.logger.error(f"Unexpected error loading YAML file: {e}")
-
-    def _setup_tasks(self):
-        self.scheduled_website_task_list = self._build_scheduled_website_task_list(self.websites_list)
-
     def monitor(self):
         self.logger.info("Start website monitoring...")
+
+        scheduled_website_task_list = self._build_scheduled_website_task_list(
+            self._load_websites_from_yaml(Config.WEBSITES_DATA_YAML))
+
         threading.Thread(target=self._log_metrics, args=(Config.DB_BULK_SECONDS_INTERVAL,)).start()
 
-        if self.scheduled_website_task_list:
+        if scheduled_website_task_list:
             with ThreadPoolExecutor(max_workers=Config.MAX_WORKERS) as executor:
                 while not self.stop_event.is_set():
                     current_time = time.time()
                     passed_time_tasks = list(
-                        filter(lambda task: task.next_execution_time <= current_time, self.scheduled_website_task_list))
+                        filter(lambda task: task.next_execution_time <= current_time, scheduled_website_task_list))
                     if not passed_time_tasks:
                         time.sleep(1)
                     else:
@@ -66,7 +52,7 @@ class WebsiteMonitor:
             status_code = response.status_code
             regex_matched = None
 
-            if status_code/100 == 2:
+            if status_code / 100 == 2:
                 content = response.text
                 regex_matched = bool(re.search(website.regex_pattern, content))
 
@@ -86,18 +72,29 @@ class WebsiteMonitor:
             time.sleep(db_bulk_interval)
 
     def _load_websites_from_yaml(self, yaml_file):
-        websites_list = []
-        with open(yaml_file, 'r') as file:
-            websites_data = yaml.safe_load(file)
-        if websites_data:
-            for website_data in websites_data['websites']:
-                websites_list.append(Website(
-                    website_data['url'],
-                    website_data['interval'],
-                    website_data['regex_pattern'])
-                )
+        try:
+            websites_list = []
+            with open(yaml_file, 'r') as file:
+                websites_data = yaml.safe_load(file)
+            if websites_data:
+                for website_data in websites_data['websites']:
+                    websites_list.append(Website(
+                        website_data['url'],
+                        website_data['interval'],
+                        website_data['regex_pattern'])
+                    )
 
-        return websites_list
+            return websites_list
+        except FileNotFoundError:
+            self.logger.error(f"YAML file not found: {yaml_file}")
+            raise ValueError(f"Error parsing YAML file: {yaml_file}")
+        except yaml.YAMLError as e:
+            self.logger.error(f"Error parsing YAML file: {e}")
+            raise ValueError(f"Error parsing YAML file: {yaml_file}")
+        except Exception as e:
+            self.logger.error(f"Unexpected error loading YAML file: {e}")
+            raise ValueError(f"Unexpected error loading YAML file: {yaml_file}")
+
 
     def _build_scheduled_website_task_list(self, websites_list):
         website_execution_tasks_list = []

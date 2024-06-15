@@ -24,9 +24,9 @@ class Application:
 
         if args.create_table:
             MonitorDao().create_website_metrics_table()
-        else:
-            self.monitor = WebsiteMonitor()
-            self.monitor.monitor()
+
+        self.monitor = WebsiteMonitor()
+        self.monitor.monitor()
 
 
 def setup_logging():
