@@ -23,8 +23,7 @@ class Application:
         signal.signal(signal.SIGTERM, self.signal_handler)
 
         if args.create_table:
-            monitor_dao = MonitorDao()
-            monitor_dao.create_website_metrics_table()
+            MonitorDao().create_website_metrics_table()
         else:
             self.monitor = WebsiteMonitor()
             self.monitor.monitor()
