@@ -1,3 +1,4 @@
+import logging
 import re
 import threading
 import time
@@ -8,23 +9,22 @@ import requests
 import yaml
 
 import Config
-from dao import MonitorDao
+from dao.MonitorDao import MonitorDao
 from models.ScheduledWebsiteTask import ScheduledWebsiteTask
 from models.Website import Website
-from utils import Logger
 
 
 class WebsiteMonitor:
     def __init__(self):
         self.scheduled_website_task_list = None
         self.websites_list = None
-        self.monitorDao = MonitorDao.MonitorDao()
+        self.monitorDao = MonitorDao()
         self.website_metrics_list = []
-        self.logger = Logger.Logger().get_logger()
+        self.logger = logging.getLogger(self.__class__.__name__)
         self.stop_event = threading.Event()
 
         self.load_websites_data(Config.WEBSITES_DATA_YAML)
-        self.setup_tasks()
+        self._setup_tasks()
 
     def load_websites_data(self, websites_data_yaml):
         try:
@@ -36,7 +36,7 @@ class WebsiteMonitor:
         except Exception as e:
             self.logger.error(f"Unexpected error loading YAML file: {e}")
 
-    def setup_tasks(self):
+    def _setup_tasks(self):
         self.scheduled_website_task_list = self._build_scheduled_website_task_list(self.websites_list)
 
     def monitor(self):
@@ -107,6 +107,6 @@ class WebsiteMonitor:
                 website_execution_tasks_list.append(website_execution_task)
         return website_execution_tasks_list
 
-    def _stop(self):
+    def stop(self):
         self.stop_event.set()
         self.logger.info("Website monitoring stopped.")

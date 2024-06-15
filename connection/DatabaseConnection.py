@@ -1,15 +1,19 @@
+import logging
+
 import psycopg2
 
 import Config
 
+
 class DatabaseConnection:
 
     def __init__(self):
-        self.conn = None
+        self.logger = logging.getLogger(self.__class__.__name__)
+        self.conn = self.connect(Config.DB_CONNECTION)
 
-    def __enter__(self):
+    def connect(self, db_connection):
         try:
-            self.conn = psycopg2.connect(Config.DB_CONNECTION)
+            self.conn = psycopg2.connect(db_connection)
             return self.conn
         except psycopg2.OperationalError as e:
             self.logger.error(f"Error: Failed to establish a database connection. {e}")
@@ -17,9 +21,9 @@ class DatabaseConnection:
             self.logger.error(f"Error: An unexpected error occurred while connecting to the database. {e}")
             raise
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def close(self):
         if self.conn:
             self.conn.close()
 
-
-
+    def get_connection(self):
+        return self.conn
