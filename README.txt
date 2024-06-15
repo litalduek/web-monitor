@@ -9,7 +9,7 @@ This is a Python-based website monitoring tool that periodically checks the stat
 
 ## Usage
 ### Command-Line Interface
-    To start the website monitoring process and create the `website_metrics` table in your PostgreSQL database:
+    To create the `website_metrics` table in your PostgreSQL database:
         python main.py --create-table
     To start the website monitoring process:
         python main.py

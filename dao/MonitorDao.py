@@ -25,6 +25,7 @@ class MonitorDao:
                     )
             ''')
             self.db_connection.commit()
+            self.db_connection.close()
             self.logger.info("Table 'website_metrics' created successfully.")
         except psycopg2.ProgrammingError as e:
             self.logger.error(f"Error: Failed to create the website_metrics table. {e}")
